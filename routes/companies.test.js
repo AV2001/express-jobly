@@ -1,5 +1,7 @@
 'use strict';
 
+process.env.NODE_ENV = 'test';
+
 const request = require('supertest');
 
 const db = require('../db');
@@ -104,6 +106,47 @@ describe('GET /companies', function () {
             .get('/companies')
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(500);
+    });
+
+    test('works when company name is provided', async () => {
+        const response = await request(app).get('/companies?name=C3');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.companies).toHaveLength(1);
+    });
+
+    test('works when minEmployees is provided', async () => {
+        const response = await request(app).get('/companies?minEmployees=2');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.companies).toHaveLength(2);
+    });
+
+    test('works when maxEmployees is provided', async () => {
+        const response = await request(app).get('/companies?maxEmployees=1');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.companies).toHaveLength(1);
+    });
+
+    test('works when both minEmployees and maxEmployees are provided', async () => {
+        const response = await request(app).get(
+            '/companies?minEmployees=2&maxEmployees=3'
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.body.companies).toHaveLength(2);
+    });
+
+    test('returns 400 if minEmployees is greater than maxEmployees', async () => {
+        const response = await request(app).get(
+            '/companies?minEmployees=5&maxEmployees=3'
+        );
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('works when name, minEmployees and maxEmployees are provided', async () => {
+        const response = await request(app).get(
+            '/companies?name=C2&minEmployees=1&maxEmployees=3'
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.body.companies).toHaveLength(1);
     });
 });
 
