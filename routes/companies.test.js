@@ -260,6 +260,35 @@ describe('PATCH /companies/:handle', function () {
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(400);
     });
+
+    test('returns 401 since request is being sent without token in header', async () => {
+        const newCompany = {
+            name: 'open-ai',
+            description: 'GPT 5 is coming soon!',
+            numEmployees: 770,
+            logoUrl: 'https://openai.com/',
+        };
+        const response = await request(app)
+            .patch('/companies/c1')
+            .send(newCompany);
+        expect(response.statusCode).toBe(401);
+    });
+
+    test('returns 401 since user is not an admin', async () => {
+        // This user is not an admin
+        const newUserToken = createToken({ username: 'New User' });
+        const newCompany = {
+            name: 'open-ai',
+            description: 'GPT 5 is coming soon!',
+            numEmployees: 770,
+            logoUrl: 'https://openai.com/',
+        };
+        const response = await request(app)
+            .patch('/companies/c1')
+            .send(newCompany)
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
 });
 
 /************************************** DELETE /companies/:handle */
