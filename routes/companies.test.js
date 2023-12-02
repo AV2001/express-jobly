@@ -312,4 +312,29 @@ describe('DELETE /companies/:handle', function () {
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(404);
     });
+
+    test('bad request on invalid data', async function () {
+        const resp = await request(app)
+            .patch(`/companies/c1`)
+            .send({
+                logoUrl: 'not-a-url',
+            })
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(resp.statusCode).toEqual(400);
+    });
+
+    test('returns 401 since request is being sent without token in header', async () => {
+        const response = await request(app).delete('/companies/c1');
+
+        expect(response.statusCode).toBe(401);
+    });
+
+    test('returns 401 since user is not an admin', async () => {
+        // This user is not an admin
+        const newUserToken = createToken({ username: 'New User' });
+        const response = await request(app)
+            .delete('/companies/c1')
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
 });
