@@ -14,6 +14,7 @@ const {
     commonAfterAll,
     u1Token,
 } = require('./_testCommon');
+const { createToken } = require('../helpers/tokens');
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -62,6 +63,23 @@ describe('POST /companies', function () {
             })
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(400);
+    });
+
+    test('returns 401 since request is being sent without token in header', async () => {
+        const response = await request(app)
+            .post('/companies')
+            .send({ ...newCompany });
+        expect(response.statusCode).toBe(401);
+    });
+
+    test('returns 401 since user is not an admin', async () => {
+        // This user is not an admin
+        const newUserToken = createToken({ username: 'New User' });
+        const response = await request(app)
+            .post('/companies')
+            .send({ ...newCompany })
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
     });
 });
 
