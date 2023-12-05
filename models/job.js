@@ -1,7 +1,7 @@
 'use strict';
 
 const db = require('../db');
-const { BadRequestError } = require('../expressError');
+const { BadRequestError, NotFoundError } = require('../expressError');
 
 class Job {
     /**
@@ -41,6 +41,30 @@ class Job {
         );
 
         return jobs.rows;
+    }
+
+    /**
+     * Given a job id, return data about job.
+     *
+     * Returns {title, salary, equity, companyHandle}
+     *
+     * Throws NotFoundError if not found.
+     */
+    static async get(id) {
+        const jobRes = await db.query(
+            `
+            SELECT title, salary, equity, company_handle AS "companyHandle"
+            FROM jobs
+            WHERE id = $1
+            `,
+            [id]
+        );
+
+        const job = jobRes.rows[0];
+
+        if (!job) throw new NotFoundError(`No job: ${id}`);
+
+        return job;
     }
 }
 
