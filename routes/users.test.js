@@ -276,6 +276,26 @@ describe('PATCH /users/:username', () => {
         const isSuccessful = await User.authenticate('u1', 'new-password');
         expect(isSuccessful).toBeTruthy();
     });
+
+    test('returns 401 for non-admin user', async () => {
+        const newUserToken = createToken({ username: 'User', isAdmin: false });
+        const response = await request(app)
+            .patch('/users/u1')
+            .send({
+                password: 'new-password',
+            })
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
+
+    test('works: admin can update any user', async () => {
+        const newAdminToken = createToken({ username: 'Admin', isAdmin: true });
+        const response = await request(app)
+            .patch('/users/u1')
+            .send({ password: 'new-password' })
+            .set('authorization', `Bearer ${newAdminToken}`);
+        expect(response.statusCode).toBe(200);
+    });
 });
 
 /************************************** DELETE /users/:username */
