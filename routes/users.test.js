@@ -13,6 +13,7 @@ const {
     commonAfterAll,
     u1Token,
 } = require('./_testCommon');
+const { createToken } = require('../helpers/tokens.js');
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -269,6 +270,25 @@ describe('DELETE /users/:username', function () {
             .delete(`/users/u1`)
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.body).toEqual({ deleted: 'u1' });
+    });
+
+    test('works for admin', async () => {
+        const newAdminToken = createToken({
+            username: 'Admin User',
+            isAdmin: true,
+        });
+        const response = await request(app)
+            .delete('/users/u1')
+            .set('authorization', `Bearer ${newAdminToken}`);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('does not work for non-admin user', async () => {
+        const newUserToken = createToken({ username: 'User', isAdmin: false });
+        const response = await request(app)
+            .delete('/users/u1')
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
     });
 
     test('unauth for anon', async function () {
