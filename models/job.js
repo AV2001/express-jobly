@@ -2,6 +2,7 @@
 
 const db = require('../db');
 const { BadRequestError, NotFoundError } = require('../expressError');
+const { sqlForPartialUpdate } = require('../helpers/sql');
 
 class Job {
     /**
@@ -65,6 +66,25 @@ class Job {
         if (!job) throw new NotFoundError(`No job: ${id}`);
 
         return job;
+    }
+
+    /**
+     * Delete given job from database; returns undefined.
+     *
+     * Throws NotFoundError if job not found
+     */
+    static async remove(id) {
+        const result = await db.query(
+            `
+            DELETE FROM jobs
+            WHERE id = $1
+            `,
+            [id]
+        );
+
+        const job = result.rows[0];
+
+        if (!job) throw new NotFoundError(`No job: ${id}`);
     }
 }
 
