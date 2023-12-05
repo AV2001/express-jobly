@@ -199,6 +199,14 @@ describe('GET /users/:username', function () {
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(404);
     });
+
+    test('returns 401 for non-admin user', async () => {
+        const newUserToken = createToken({ username: 'User', isAdmin: false });
+        const response = await request(app)
+            .get('/users/u1')
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
 });
 
 /************************************** PATCH /users/:username */
