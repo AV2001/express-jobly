@@ -145,6 +145,14 @@ describe('GET /users', function () {
         });
     });
 
+    test('returns 401 for non-admin user', async () => {
+        const newUserToken = createToken({ username: 'User', isAdmin: false });
+        const response = await request(app)
+            .get('/users')
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
+
     test('unauth for anon', async function () {
         const resp = await request(app).get('/users');
         expect(resp.statusCode).toEqual(401);
@@ -283,7 +291,7 @@ describe('DELETE /users/:username', function () {
         expect(response.statusCode).toBe(200);
     });
 
-    test('does not work for non-admin user', async () => {
+    test('returns 401 for non-admin user', async () => {
         const newUserToken = createToken({ username: 'User', isAdmin: false });
         const response = await request(app)
             .delete('/users/u1')
