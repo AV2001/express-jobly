@@ -68,6 +68,46 @@ class Job {
         return job;
     }
 
+    /** Update job data with `data`.
+     *
+     * This is a "partial update" --- it's fine if data doesn't contain all the
+     * fields; this only changes provided ones.
+     *
+     * Data can include: {title, salary, equity}
+     *
+     * Returns {title, salary, equity, companyHandle}
+     *
+     * Throws NotFoundError if not found.
+     */
+    static async update(id, data) {
+        // Exclude fields that should not be updated
+        const { companyHandle, ...updateData } = data;
+        if (companyHandle) {
+            throw new BadRequestError('Updating company handle is not allowed');
+        }
+
+        // Check if there's data left to update after removing restricted fields
+        if (Object.keys(updateData).length === 0) {
+            throw new BadRequestError('No data to update');
+        }
+
+        const { setCols, values } = sqlForPartialUpdate(updateData, {});
+
+        const idVarIdx = '$' + (values.length + 1);
+
+        const querySql = `UPDATE jobs
+                          SET ${setCols}
+                          WHERE id = ${idVarIdx}
+                          RETURNING id, title, salary, equity, company_handle AS "companyHandle"`;
+
+        const result = await db.query(querySql, [...values, id]);
+        const job = result.rows[0];
+
+        if (!job) throw new NotFoundError(`No job: ${id}`);
+
+        return job;
+    }
+
     /**
      * Delete given job from database; returns undefined.
      *
