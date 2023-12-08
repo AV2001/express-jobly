@@ -9,6 +9,7 @@ const { ensureLoggedIn, ensureUserIsAdmin } = require('../middleware/auth');
 const Job = require('../models/job');
 
 const jobNewSchema = require('../schemas/jobNew.json');
+const jobUpdateSchema = require('../schemas/jobUpdate.json');
 const { BadRequestError } = require('../expressError');
 
 const router = express.Router();
@@ -63,6 +64,32 @@ router.post('/', ensureUserIsAdmin, async (req, res, next) => {
 
         const job = await Job.create(req.body);
         return res.status(201).json({ job });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+/**
+ * PATCH /:id {field1, field2, ...} => {job}
+ *
+ * Patches job data.
+ *
+ * Fields can be: {title, salary, equity}
+ *
+ * Returns {title, salary, equity, companyHandle}
+ *
+ * Authorization required: login
+ */
+router.patch('/:id', ensureUserIsAdmin, async (req, res, next) => {
+    try {
+        const validator = jsonschema.validate(req.body, jobUpdateSchema);
+        if (!validator.valid) {
+            const errors = validator.errors.map((e) => e.stack);
+            throw new BadRequestError(errors);
+        }
+
+        const job = await Job.update(req.params.id, req.body);
+        return res.json({ job });
     } catch (err) {
         return next(err);
     }
