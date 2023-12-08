@@ -23,25 +23,20 @@ const router = new express.Router();
  * Authorization required: login
  */
 
-router.post(
-    '/',
-    ensureLoggedIn,
-    ensureUserIsAdmin,
-    async function (req, res, next) {
-        try {
-            const validator = jsonschema.validate(req.body, companyNewSchema);
-            if (!validator.valid) {
-                const errs = validator.errors.map((e) => e.stack);
-                throw new BadRequestError(errs);
-            }
-
-            const company = await Company.create(req.body);
-            return res.status(201).json({ company });
-        } catch (err) {
-            return next(err);
+router.post('/', ensureUserIsAdmin, async function (req, res, next) {
+    try {
+        const validator = jsonschema.validate(req.body, companyNewSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map((e) => e.stack);
+            throw new BadRequestError(errs);
         }
+
+        const company = await Company.create(req.body);
+        return res.status(201).json({ company });
+    } catch (err) {
+        return next(err);
     }
-);
+});
 
 /** GET /  =>
  *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
@@ -101,46 +96,33 @@ router.get('/:handle', async function (req, res, next) {
  * Authorization required: login
  */
 
-router.patch(
-    '/:handle',
-    ensureLoggedIn,
-    ensureUserIsAdmin,
-    async function (req, res, next) {
-        try {
-            const validator = jsonschema.validate(
-                req.body,
-                companyUpdateSchema
-            );
-            if (!validator.valid) {
-                const errs = validator.errors.map((e) => e.stack);
-                throw new BadRequestError(errs);
-            }
-
-            const company = await Company.update(req.params.handle, req.body);
-            return res.json({ company });
-        } catch (err) {
-            return next(err);
+router.patch('/:handle', ensureUserIsAdmin, async function (req, res, next) {
+    try {
+        const validator = jsonschema.validate(req.body, companyUpdateSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map((e) => e.stack);
+            throw new BadRequestError(errs);
         }
+
+        const company = await Company.update(req.params.handle, req.body);
+        return res.json({ company });
+    } catch (err) {
+        return next(err);
     }
-);
+});
 
 /** DELETE /[handle]  =>  { deleted: handle }
  *
  * Authorization: login
  */
 
-router.delete(
-    '/:handle',
-    ensureLoggedIn,
-    ensureUserIsAdmin,
-    async function (req, res, next) {
-        try {
-            await Company.remove(req.params.handle);
-            return res.json({ deleted: req.params.handle });
-        } catch (err) {
-            return next(err);
-        }
+router.delete('/:handle', ensureUserIsAdmin, async function (req, res, next) {
+    try {
+        await Company.remove(req.params.handle);
+        return res.json({ deleted: req.params.handle });
+    } catch (err) {
+        return next(err);
     }
-);
+});
 
 module.exports = router;
