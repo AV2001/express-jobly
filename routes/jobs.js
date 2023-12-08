@@ -29,6 +29,22 @@ router.get('/', async (req, res, next) => {
 });
 
 /**
+ * GET /:id => {job}
+ *
+ * Job is {title, salary, equity, companyHandle}
+ *
+ * Authorization required: none
+ */
+router.get('/:id', async (req, res, next) => {
+    try {
+        const job = await Job.get(req.params.id);
+        return res.json({ job });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+/**
  * POST / {job} => {job}
  *
  * job should be {title, salary, equity, companyHandle}
