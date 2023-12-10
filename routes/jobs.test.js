@@ -12,9 +12,9 @@ const {
     commonBeforeEach,
     commonAfterEach,
     commonAfterAll,
+    testJob,
 } = require('./_testCommon');
 const { createToken } = require('../helpers/tokens');
-const Test = require('supertest/lib/test');
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -26,15 +26,6 @@ describe('GET /jobs', () => {
     test('Returns all jobs', async () => {
         const response = await request(app).get('/jobs');
         expect(response.statusCode).toBe(200);
-        expect(response.body).toEqual({
-            jobs: [
-                {
-                    title: 'Software Engineer',
-                    salary: 200000,
-                    equity: '0.5',
-                    companyHandle: 'c1',
-                },
-            ],
-        });
+        expect(response.body).toEqual({ jobs: [testJob()] });
     });
 });
