@@ -18,7 +18,7 @@ class Job {
             INSERT INTO jobs
             (title, salary, equity, company_handle)
             VALUES ($1, $2, $3, $4)
-            RETURNING title, salary, equity, company_handle AS "companyHandle"
+            RETURNING id, title, salary, equity, company_handle AS "companyHandle"
             `,
             [title, salary, equity, companyHandle]
         );
@@ -37,7 +37,7 @@ class Job {
     static async findAll() {
         const jobs = await db.query(
             `
-            SELECT title, salary, equity, company_handle AS "companyHandle" FROM jobs
+            SELECT id, title, salary, equity, company_handle AS "companyHandle" FROM jobs
             `
         );
 
@@ -54,7 +54,7 @@ class Job {
     static async get(id) {
         const jobRes = await db.query(
             `
-            SELECT title, salary, equity, company_handle AS "companyHandle"
+            SELECT id, title, salary, equity, company_handle AS "companyHandle"
             FROM jobs
             WHERE id = $1
             `,
