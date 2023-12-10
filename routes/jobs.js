@@ -95,4 +95,18 @@ router.patch('/:id', ensureUserIsAdmin, async (req, res, next) => {
     }
 });
 
+/**
+ * DELETE /:id => {delete: id}
+ *
+ * Authorization required: login
+ */
+router.delete('/:id', ensureUserIsAdmin, async (req, res, next) => {
+    try {
+        await Job.remove(req.params.id);
+        return res.json({ deleted: req.params.id });
+    } catch (err) {
+        return next(err);
+    }
+});
+
 module.exports = router;
