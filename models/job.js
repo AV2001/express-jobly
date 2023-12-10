@@ -118,13 +118,14 @@ class Job {
             `
             DELETE FROM jobs
             WHERE id = $1
+            RETURNING id
             `,
             [id]
         );
 
         const job = result.rows[0];
 
-        if (!job) throw new NotFoundError(`No job: ${id}`);
+        if (!job) throw new NotFoundError(`No id: ${id}`);
     }
 }
 
