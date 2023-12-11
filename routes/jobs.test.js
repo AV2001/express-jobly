@@ -63,7 +63,7 @@ describe('POST /jobs', () => {
             job: {
                 ...newJob,
                 id: expect.any(Number),
-                equity: expect.any(String),
+                equity: '0.1',
             },
         });
     });
@@ -98,6 +98,77 @@ describe('POST /jobs', () => {
         };
         const response = await request(app)
             .post('/jobs')
+            .send(newJob)
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
+});
+
+// PATCH /jobs/:id
+describe('PATCH /jobs/:id', () => {
+    test('Update a job successfully as an admin', async () => {
+        const updatedJob = { title: 'Senior Software Engineer' };
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
+            .send(updatedJob)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual({
+            job: {
+                title: updatedJob.title,
+                salary: 200000,
+                equity: '0.5',
+                companyHandle: 'c1',
+            },
+        });
+    });
+
+    test('Returns 400 if id is updated', async () => {
+        const updatedJob = { id: 100 };
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
+            .send(updatedJob)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns 400 if companyHandle is updated', async () => {
+        const updatedJob = {
+            companyHandle: 'google',
+        };
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
+            .send(updatedJob)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns 400 on invalid data', async () => {
+        const updatedJob = { salary: '200000' };
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
+            .send(updatedJob)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns 400 if job data us empty', async () => {
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns 401 if non-admin updates a job', async () => {
+        const newUserToken = createToken({ username: 'user', isAdmin: false });
+        const newJob = {
+            title: 'Software Engineer',
+            salary: 200000,
+            equity: 0.1,
+            companyHandle: 'c1',
+        };
+        const response = await request(app)
+            .patch(`/jobs/${testJob().id}`)
             .send(newJob)
             .set('authorization', `Bearer ${newUserToken}`);
         expect(response.statusCode).toBe(401);
