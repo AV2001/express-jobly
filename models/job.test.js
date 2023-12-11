@@ -8,6 +8,7 @@ const {
     commonBeforeEach,
     commonAfterEach,
     commonAfterAll,
+    testJob,
 } = require('./_testCommon');
 
 beforeAll(commonBeforeAll);
@@ -43,5 +44,22 @@ describe('findAll', () => {
                 companyHandle: 'c1',
             },
         ]);
+    });
+});
+
+// get
+describe('get', () => {
+    test('works', async () => {
+        const testJobData = testJob().rows[0];
+        const job = await Job.get(`${testJobData.id}`);
+        expect(job).toEqual({ ...testJobData });
+    });
+
+    test('return 404 if no such company is found', async () => {
+        try {
+            await Job.get(0);
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
     });
 });
