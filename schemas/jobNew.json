@@ -19,8 +19,8 @@
             "examples": [200000]
         },
         "equity": {
-            "type": "integer",
-            "default": 0,
+            "type": "number",
+            "default": 0.0,
             "title": "The equity Schema",
             "examples": [0]
         },
