@@ -18,11 +18,16 @@ const router = express.Router();
  * GET / =>
  * {jobs: [{title, salary, equity, companyHandle}, ...]}
  *
+ * Can filter on provided search filters:
+ * - title (will find case-insensitive, partial matches)
+ * - minSalary
+ * - hasEquity ()
+ *
  * Authorization required: none
  */
 router.get('/', async (req, res, next) => {
     try {
-        const jobs = await Job.findAll();
+        const jobs = await Job.findAll(req.query);
         return res.json({ jobs });
     } catch (err) {
         return next(err);
