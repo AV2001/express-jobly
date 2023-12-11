@@ -55,11 +55,48 @@ describe('get', () => {
         expect(job).toEqual({ ...testJobData });
     });
 
-    test('return 404 if no such company is found', async () => {
+    test('returns 404 if no such company is found', async () => {
         try {
             await Job.get(0);
         } catch (err) {
             expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    });
+});
+
+// update
+describe('update', () => {
+    const updateData = {
+        title: 'Senior Software Engineer',
+        salary: 260000,
+        equity: 0.8,
+    };
+
+    test('works', async () => {
+        const testJobData = testJob().rows[0];
+        const job = await Job.update(testJobData.id, updateData);
+        expect(job).toEqual({
+            ...updateData,
+            companyHandle: 'c1',
+            equity: '0.8',
+        });
+    });
+
+    test('returns 404 if no such company is found', async () => {
+        const testJobData = testJob().rows[0];
+        try {
+            await Job.update(0, updateData);
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    });
+
+    test('returns 400 with no data', async () => {
+        const testJobData = testJob().rows[0];
+        try {
+            await Job.update(testJobData.id, {});
+        } catch (err) {
+            expect(err instanceof BadRequestError).toBeTruthy();
         }
     });
 });
