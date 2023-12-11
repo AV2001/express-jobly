@@ -34,13 +34,30 @@ class Job {
      * Returns [{title, salary, equity, companyHandle}, ...]
      *
      */
-    static async findAll() {
-        const jobs = await db.query(
-            `
-            SELECT id, title, salary, equity, company_handle AS "companyHandle" FROM jobs
-            `
-        );
+    static async findAll({ title, minSalary, hasEquity } = {}) {
+        let query = ` SELECT id, title, salary, equity, company_handle AS "companyHandle" FROM jobs`;
+        const queryValues = [];
+        const whereExpressions = [];
 
+        if (title) {
+            queryValues.push(`%${title}%`);
+            whereExpressions.push(`title ILIKE $${queryValues.length}`);
+        }
+
+        if (minSalary) {
+            queryValues.push(parseInt(minSalary));
+            whereExpressions.push(`salary >= $${queryValues.length}`);
+        }
+
+        if (hasEquity === 'true') {
+            whereExpressions.push('equity > 0');
+        }
+
+        if (whereExpressions.length > 0) {
+            query += ' WHERE ' + whereExpressions.join(' AND ');
+        }
+
+        const jobs = await db.query(query, queryValues);
         return jobs.rows;
     }
 
