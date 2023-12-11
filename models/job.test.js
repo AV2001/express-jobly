@@ -100,3 +100,25 @@ describe('update', () => {
         }
     });
 });
+
+// remove
+describe('remove', () => {
+    test('works', async () => {
+        const testJobData = testJob().rows[0];
+        await Job.remove(testJobData.id);
+        const result = await db.query(
+            `
+            SELECT id FROM jobs WHERE id = ${testJobData.id}
+            `
+        );
+        expect(result.rows.length).toEqual(0);
+    });
+
+    test('returns 404 if no such company is found', async () => {
+        try {
+            await Job.remove(0);
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    });
+});
