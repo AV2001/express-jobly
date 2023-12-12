@@ -46,6 +46,29 @@ router.post('/', ensureUserIsAdmin, async function (req, res, next) {
     }
 });
 
+/**
+ * POST /users/:username/jobs/:id
+ *
+ * Adds a new application. Can be done by that user or the admin
+ *
+ * Returns {applied: jobId}
+ *
+ * Authorization required: login
+ */
+router.post(
+    '/:username/jobs/:id',
+    ensureCorrectUserOrAdmin,
+    async (req, res, next) => {
+        try {
+            const { username, id } = req.params;
+            const application = await User.applyToJob(username, id);
+            return res.status(201).json({ applied: application.jobId });
+        } catch (err) {
+            return next(err);
+        }
+    }
+);
+
 /** GET / => { users: [ {username, firstName, lastName, email }, ... ] }
  *
  * Returns list of all users.
