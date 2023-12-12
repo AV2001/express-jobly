@@ -12,6 +12,7 @@ const {
     commonAfterEach,
     commonAfterAll,
     u1Token,
+    testJob,
 } = require('./_testCommon');
 const { createToken } = require('../helpers/tokens.js');
 
@@ -108,6 +109,52 @@ describe('POST /users', function () {
             })
             .set('authorization', `Bearer ${u1Token}`);
         expect(resp.statusCode).toEqual(400);
+    });
+});
+
+/************************************** POST /users/:username/jobs/:id */
+describe('POST /users/:username/jobs/:id', () => {
+    test('works for an admin', async () => {
+        const testJobData = testJob();
+        const response = await request(app)
+            .post(`/users/u1/jobs/${testJobData.id}`)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(201);
+        expect(response.body).toEqual({ applied: expect.any(Number) });
+    });
+
+    test('works for that user', async () => {
+        const testJobData = testJob();
+        const newUserToken = createToken({ username: 'u2', isAdmin: false });
+        const response = await request(app)
+            .post(`/users/u2/jobs/${testJobData.id}`)
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(201);
+        expect(response.body).toEqual({ applied: expect.any(Number) });
+    });
+
+    test('returns 401 if non-admin user applies on behalf of another user', async () => {
+        const testJobData = testJob();
+        const newUserToken = createToken({ username: 'u2', isAdmin: false });
+        const response = await request(app)
+            .post(`/users/u3/jobs/${testJobData.id}`)
+            .set('authorization', `Bearer ${newUserToken}`);
+        expect(response.statusCode).toBe(401);
+    });
+
+    test('returns 404 with invalid job id', async () => {
+        const response = await request(app)
+            .post(`/users/u1/jobs/0`)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('returns 404 with invalid username', async () => {
+        const testJobData = testJob();
+        const response = await request(app)
+            .post(`/users/nonsense/jobs/${testJobData.id}`)
+            .set('authorization', `Bearer ${u1Token}`);
+        expect(response.statusCode).toBe(404);
     });
 });
 
