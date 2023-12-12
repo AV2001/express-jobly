@@ -85,44 +85,35 @@ class Company {
      **/
 
     static async get(handle) {
+        // Query to get company details
         const companyRes = await db.query(
-            `SELECT c.handle,
-                  c.name,
-                  c.description,
-                  c.num_employees AS "numEmployees",
-                  c.logo_url AS "logoUrl",
-                  j.id,
-                  j.title,
-                  j.salary,
-                  j.equity
-           FROM companies c
-           JOIN jobs j ON
-           c.handle = j.company_handle
-           WHERE handle = $1`,
+            `SELECT handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"
+             FROM companies
+             WHERE handle = $1`,
             [handle]
         );
 
-        const companies = companyRes.rows;
-        const company = companies[0];
-
+        const company = companyRes.rows[0];
         if (!company) throw new NotFoundError(`No company: ${handle}`);
 
-        const jobs = companies.map((company) => {
-            return {
-                id: company.id,
-                title: company.title,
-                salary: company.salary,
-                equity: company.equity,
-            };
-        });
+        // Query to get jobs for the company
+        const jobsRes = await db.query(
+            `SELECT id, title, salary, equity
+             FROM jobs
+             WHERE company_handle = $1`,
+            [handle]
+        );
 
+        const jobs = jobsRes.rows;
+
+        // Combine company data with jobs data
         const jsonResponse = {
             handle: company.handle,
             name: company.name,
             description: company.description,
             numEmployees: company.numEmployees,
             logoUrl: company.logoUrl,
-            jobs,
+            jobs: jobs.length > 0 ? jobs : [], // Returns an empty array if no jobs are found
         };
 
         return jsonResponse;

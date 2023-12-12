@@ -13,6 +13,7 @@ const {
     commonAfterEach,
     commonAfterAll,
     u1Token,
+    testJob,
 } = require('./_testCommon');
 const { createToken } = require('../helpers/tokens');
 
@@ -180,12 +181,23 @@ describe('GET /companies/:handle', function () {
                 description: 'Desc1',
                 numEmployees: 1,
                 logoUrl: 'http://c1.img',
+                jobs: [
+                    {
+                        id: expect.any(Number),
+                        title: 'Software Engineer',
+                        salary: 200000,
+                        equity: '0.5',
+                    },
+                ],
             },
         });
     });
 
     test('works for anon: company w/o jobs', async function () {
+        await db.query(`DELETE FROM jobs WHERE company_handle = 'c2'`);
+
         const resp = await request(app).get(`/companies/c2`);
+
         expect(resp.body).toEqual({
             company: {
                 handle: 'c2',
@@ -193,6 +205,7 @@ describe('GET /companies/:handle', function () {
                 description: 'Desc2',
                 numEmployees: 2,
                 logoUrl: 'http://c2.img',
+                jobs: [],
             },
         });
     });
