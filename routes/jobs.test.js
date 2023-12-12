@@ -27,7 +27,61 @@ describe('GET /jobs', () => {
     test('returns all jobs', async () => {
         const response = await request(app).get('/jobs');
         expect(response.statusCode).toBe(200);
-        expect(response.body).toEqual({ jobs: [testJob()] });
+        expect(response.body).toEqual({
+            jobs: [
+                {
+                    id: expect.any(Number),
+                    title: 'Software Engineer',
+                    salary: 200000,
+                    equity: '0.5',
+                    companyHandle: 'c1',
+                },
+                {
+                    id: expect.any(Number),
+                    title: 'Data Scientist',
+                    salary: 120000,
+                    equity: '0',
+                    companyHandle: 'c2',
+                },
+                {
+                    id: expect.any(Number),
+                    title: 'Senior Data Scientist',
+                    salary: 180000,
+                    equity: '0.2',
+                    companyHandle: 'c3',
+                },
+            ],
+        });
+    });
+
+    test('works when job title is provided', async () => {
+        const response = await request(app).get('/jobs?title=scientist');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.jobs).toHaveLength(2);
+    });
+
+    test('works when minSalary is provided', async () => {
+        const response = await request(app).get('/jobs?minSalary=181000');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.jobs).toHaveLength(1);
+    });
+
+    test('works when hasEquity is true', async () => {
+        const response = await request(app).get('/jobs?hasEquity=true');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.jobs).toHaveLength(2);
+    });
+
+    test('works when hasEquity value is anything else but true', async () => {
+        const response = await request(app).get('/jobs?hasEquity=test');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.jobs).toHaveLength(3);
+    });
+
+    test('returns all jobs when there are no filters', async () => {
+        const response = await request(app).get('/jobs');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.jobs).toHaveLength(3);
     });
 });
 
