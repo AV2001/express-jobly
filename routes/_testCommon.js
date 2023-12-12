@@ -68,6 +68,20 @@ async function commonBeforeAll() {
         equity: 0.5,
         companyHandle: 'c1',
     });
+
+    await Job.create({
+        title: 'Data Scientist',
+        salary: 120000,
+        equity: 0,
+        companyHandle: 'c2',
+    });
+
+    await Job.create({
+        title: 'Senior Data Scientist',
+        salary: 180000,
+        equity: 0.2,
+        companyHandle: 'c3',
+    });
 }
 
 async function commonBeforeEach() {
