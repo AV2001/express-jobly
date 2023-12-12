@@ -141,6 +141,53 @@ class User {
         return user;
     }
 
+    /**
+     * Given a username and jobId, apply to the job.
+     *
+     * Returns {applied: jobId}
+     *
+     * Throws NotFoundError if user or job are not found.
+     */
+    static async applyToJob(username, jobId) {
+        const usernameResponse = await db.query(
+            `
+            SELECT username FROM users
+            WHERE username = $1
+            `,
+            [username]
+        );
+
+        const user = usernameResponse.rows[0];
+
+        if (!user)
+            throw new NotFoundError(
+                `User with username '${username}' not found!`
+            );
+
+        const jobResponse = await db.query(
+            `
+            SELECT id FROM jobs
+            WHERE id = $1
+            `,
+            [jobId]
+        );
+
+        const job = jobResponse.rows[0];
+
+        if (!job) throw new NotFoundError(`Job with id '${jobId}' not found!`);
+
+        const newApplication = await db.query(
+            `
+            INSERT INTO applications
+            VALUES ($1, $2)
+            RETURNING job_id AS "jobId"
+            `,
+            [username, jobId]
+        );
+
+        return newApplication.rows[0];
+    }
+
     /** Update user data with `data`.
      *
      * This is a "partial update" --- it's fine if data doesn't contain
